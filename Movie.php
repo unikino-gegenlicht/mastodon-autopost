@@ -44,5 +44,21 @@ class Movie {
 	 */
 	public bool $licensed;
 
-	
+	public function postToDiscord() {
+		$webhook_url = get_option(OptionsDiscordWebhookUrlKey);
+		if (!$webhook_url) {
+			return;
+		}
+
+		$message = Discord::message($webhook_url);
+		$message->setUsername($this->name);
+		$message->setContent($this->description);
+		$message->setImage(get_the_post_thumbnail_url($this->wp_post_id, size: 'large'));
+		$message->setAvatarUrl(get_person_avatar_url($this));
+		$message->send();
+	}
+
+	public function postToMastodon() {
+
+	}
 }
