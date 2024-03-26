@@ -1,0 +1,8 @@
+{
+    "name": "gegenlicht.net/movie-autopost",
+    "type": "wordpress-plugin",
+    "require": {
+        "php-channels/discord-webhook": "^1.0"
+    },
+    "license": "EUPL1.2-or-later"
+}
