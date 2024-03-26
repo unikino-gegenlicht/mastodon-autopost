@@ -1,6 +1,6 @@
 <?php
 
-    class MastodonAPI
+    class  MastodonAPI
     {
         private $token;
         private $instance_url;
