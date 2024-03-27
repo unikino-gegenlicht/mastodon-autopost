@@ -25,10 +25,10 @@
 
 const OptionsPrefix               = "movie-autopost";
 const OptionsSeparator            = '_';
-const OptionsDiscordWebhookUrlKey = OptionsPrefix . OptionsSeparator . 'discord-webhook-url';
+const OptionsDiscordWebhookUrl = OptionsPrefix . OptionsSeparator . 'discord-webhook-url';
 const OptionsDiscordFallbackAvatarUrl = OptionsPrefix.OptionsSeparator.'discord-fallback-avatar-url';
-const OptionsMastodonInstanceKey  = OptionsPrefix . OptionsSeparator . 'mastodon-instance';
-const OptionsMastodonTokenKey     = OptionsPrefix . OptionsSeparator . 'mastodon-api-key';
+const OptionsMastodonInstance  = OptionsPrefix . OptionsSeparator . 'mastodon-instance';
+const OptionsMastodonToken     = OptionsPrefix . OptionsSeparator . 'mastodon-api-key';
 
 const CronName = "movie-autopost_cron";
 
@@ -56,10 +56,10 @@ function configure_menus() {
  * @return void
  */
 function initialize_settings() {
-	register_setting( "options", OptionsDiscordWebhookUrlKey );
+	register_setting( "options", OptionsDiscordWebhookUrl );
 	register_setting( "options", OptionsDiscordFallbackAvatarUrl );
-	register_setting( "options", OptionsMastodonInstanceKey );
-	register_setting( "options", OptionsMastodonTokenKey );
+	register_setting( "options", OptionsMastodonInstance );
+	register_setting( "options", OptionsMastodonToken );
 }
 
 function register_cron() {
