@@ -5,19 +5,20 @@
  * @package       Movie Autopost
  * @author        Benjamin Witte, Jan Eike Suchard
  * @license       EUPL1.2-or-later
- * @version       1.0.1
+ * @version       1.1.0
  *
  * @wordpress-plugin
  * Plugin Name:   Movie Autopost
  * Plugin URI:    https://gegenlicht.net
  * Description:   Plugin um bald laufende Filme im Gegenlicht einige Zeit vorher automatisch anzukündigen
- * Version:       1.0.1
+ * Version:       1.1.0
  * Author:        Benjamin Witte, Jan Eike Suchard
  * Author URI:    https://your-author-domain.com
  * Text Domain:   movie-autopost
  * Domain Path:   /languages
  * License:       EUPL1.2-or-later
  * License URI:   https://joinup.ec.europa.eu/sites/default/files/custom-page/attachment/2020-03/EUPL-1.2%20EN.txt
+ * Requires PHP: 8.1
  *
  * You should have received a copy of the GNU General Public License
  * along with Mastodon Auto Post Filme. If not, see <https://www.gnu.org/licenses/gpl-2.0.html/>.
