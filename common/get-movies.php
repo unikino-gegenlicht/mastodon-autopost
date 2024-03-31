@@ -30,18 +30,25 @@ function map_get_movies(): array {
 	}
 	$movies = array();
 	while ( $posts->have_posts() ) {
-		$movie      = new Movie();
 		$post       = $posts->post;
 		$movieDate  = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
-		$movieStart = get_post_meta( $post->ID, 'haptfilm_time', single: true );
-		$movie->start       = DateTime::createFromFormat( "Y-m-d H:i", $movieDate . ' ' . $movieStart );
+		$movieStart = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
+		if ( date( 'Y-m-d' ) >= date( 'Y-m-d', strtotime( '-3 day', strtotime( "$movieDate $movieStart:00" ) ) ) ) {
+			$posts->next_post();
+			continue;
+		}
+		$movie              = new MAP_Movie();
+		$movieDate          = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
+		$movieStart         = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
+		$movie->start       = strtotime( "$movieDate $movieStart:00" );
 		$movie->name        = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
-		$movie->description = get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true );
+		$movie->description = sanitize_text_field( get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true ) );
 		$movie->gerne       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
 		$movie->proposedBy  = get_post_meta( $post->ID, 'weiteres_selected_by_name', single: true );
 		$movie->licensed    = get_post_meta( $post->ID, 'hauptfilm_license_ok', true );
 		$movie->wp_post_id  = $post->ID;
 		$movies[]           = $movie;
+		$posts->next_post();
 	}
 
 	return $movies;
