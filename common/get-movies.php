@@ -18,37 +18,48 @@ function map_get_movies(): array {
 		),
 		'post_status'    => 'publish',
 		'orderby'        => 'meta_value date',
-		'meta_key'       => 'hauptfilm_date',
+		'meta_key'       => metaQueryKey,
 		'order'          => 'ASC',
-		'posts_per_page' => '1'
+		'posts_per_page' => - 1,
 	);
 
 	$posts = new WP_Query( $filter );
 
-	if ( ! $posts->have_posts() || get_theme_mod( "sepa_checkbox" ) ) {
+	if ( ! $posts->have_posts() || get_theme_mod( "sepa_checkbox" ) === true ) {
+		error_log( 'no movies found or sepa_checkbox enabled' );
+
 		return array();
 	}
 	$movies = array();
-	while ( $posts->have_posts() ) {
-		$post       = $posts->post;
-		$movieDate  = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
-		$movieStart = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
-		if ( date( 'Y-m-d' ) >= date( 'Y-m-d', strtotime( '-3 day', strtotime( "$movieDate $movieStart:00" ) ) ) ) {
-			$posts->next_post();
-			continue;
-		}
-		$movie              = new MAP_Movie();
+	foreach ( $posts->get_posts() as $post ) {
+
 		$movieDate          = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
 		$movieStart         = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
-		$movie->start       = strtotime( "$movieDate $movieStart:00" );
-		$movie->name        = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
+		$movieStartDateTime = DateTimeImmutable::createFromFormat( "Y-m-d", "$movieDate", new DateTimeZone( "Europe/Berlin" ) );
+		$dateLimit          = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( '+3 day ' ) ), new DateTimeZone( 'UTC' ) );
+		$dateLimit          = $dateLimit->setTimezone( new DateTimeZone( "Europe/Berlin" ) );
+
+		if ( ! ( $movieStartDateTime <= $dateLimit ) ) {
+			error_log( "$post->post_name after " . $dateLimit->format( "d.m.Y" ) );
+			continue;
+		}
+		$start_time_data    = date_parse( $movieStart );
+		$movieStartDateTime = $movieStartDateTime->setTime( $start_time_data['hour'], $start_time_data['minute'] );
+		$movie              = new MAP_Movie();
+		$movie->start       = $movieStartDateTime;
+		$movieLicensed      = get_post_meta( $post->ID, 'hauptfilm_license_ok', single: true ) == 1;
+		if ( ! $movieLicensed ) {
+			$movie->name = $post->post_title;
+		} else {
+
+			$movie->name = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
+		}
 		$movie->description = sanitize_text_field( get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true ) );
 		$movie->gerne       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
 		$movie->proposedBy  = get_post_meta( $post->ID, 'weiteres_selected_by_name', single: true );
 		$movie->licensed    = get_post_meta( $post->ID, 'hauptfilm_license_ok', true );
 		$movie->wp_post_id  = $post->ID;
-		$movies[]           = $movie;
-		$posts->next_post();
+		array_push( $movies, $movie );
 	}
 
 	return $movies;

@@ -7,6 +7,20 @@ use PhpChannels\DiscordWebhook\Discord;
 
 const eol = "\r\n";
 
+$utc     = new DateTimeZone( 'UTC' );
+$germany = new DateTimeZone( 'Europe/Berlin' );
+
+$threeDaysFromNow = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( '+3 day ' ) ), $utc );
+$threeDaysFromNow = $threeDaysFromNow->setTimezone( $germany );
+
+$twoDaysFromNow = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( '+3 day ' ) ), $utc );
+$twoDaysFromNow = $twoDaysFromNow->setTimezone( $germany );
+
+$oneDayFromNow = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( '+3 day ' ) ), $utc );
+$oneDayFromNow = $oneDayFromNow->setTimezone( $germany );
+
+$today = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( '+3 day ' ) ), $utc );
+$today = $today->setTimezone( $germany );
 
 /**
  * Represents a Movie entity.
@@ -38,9 +52,9 @@ class MAP_Movie {
 	public string $proposedBy;
 
 	/**
-	 * @var int $start The starting point of the movie
+	 * @var DateTimeImmutable $start The starting point of the movie
 	 */
-	public int $start;
+	public DateTimeImmutable $start;
 
 	/**
 	 * @var bool $licensed Whether the content is licensed or not
@@ -58,24 +72,27 @@ class MAP_Movie {
 	 * @return string The generated post content.
 	 */
 	private function getPostContent(): string {
+		global $threeDaysFromNow, $twoDaysFromNow, $oneDayFromNow, $today;
 		$old_locale = get_locale();
 		setlocale( LC_ALL, "de_de" );
-		$starting_time = date( 'H:i', $this->start );
-		$weekday       = date( "l", $this->start );
+		$starting_time = $this->start->format("H:i");
+		$weekday       = $this->start->format("l");
 		$status_prefix = '';
-		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-3 day', $this->start ) ) ) {
-			$status_prefix = "In drei Tagen zeigen wir euch um $starting_time bei uns den Film $this->name. Ausgesucht wurde der Film von $this->proposedBy.";
+
+		switch ( $this->start ) {
+			case $threeDaysFromNow:
+				$status_prefix = "In drei Tagen zeigen wir euch um $starting_time bei uns den Film $this->name. Ausgesucht wurde der Film von $this->proposedBy.";
+				break;
+			case $twoDaysFromNow:
+				$status_prefix = "Der $weekday rückt näher und wir freuen uns, euch in zwei Tagen den Film $this->name präsentieren zu dürfen.";
+				break;
+			case $oneDayFromNow:
+				$status_prefix = "Morgen ist $weekday und das heißt für euch, dass ihr euch $this->name bei uns im Unikino nicht entgehen lassen dürft.";
+				break;
+			case $today:
+				$status_prefix = "Es ist endlich wieder $weekday und damit Zeit für einen neuen Film im Unikino. Wir freuen uns, euch heute um $starting_time den von $this->proposedBy ausgesuchten Film <i>$this->name</i> präsentieren zu dürfen.";
+				break;
 		}
-		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-2 day', $this->start ) ) ) {
-			$status_prefix = "Der $weekday rückt näher und wir freuen uns, euch in zwei Tagen den Film $this->name präsentieren zu dürfen.";
-		}
-		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-1 day', $this->start ) ) ) {
-			$status_prefix = "Morgen ist $weekday und das heißt für euch, dass ihr euch $this->name bei uns im Unikino nicht entgehen lassen dürft.";
-		}
-		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( 'today', $this->start ) ) ) {
-			$status_prefix = "Es ist endlich wieder $weekday und damit Zeit für einen neuen Film im Unikino. Wir freuen uns, euch heute um $starting_time den von $this->proposedBy ausgesuchten Film <i>$this->name</i> präsentieren zu dürfen.";
-		}
-		setlocale( LC_ALL, $old_locale );
 
 		return $status_prefix . eol . eol . wp_trim_words( $this->description, 35, ' ...' ) . eol . eol . "Mehr Infos und Tickets unter: " . get_permalink( $this->wp_post_id ) . eol . eol . "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
 	}

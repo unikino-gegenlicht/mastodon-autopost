@@ -8,7 +8,7 @@ function map_run_discord_test() {
 	foreach ( $movies as $movie ) {
 		try {
 			$movie->postToDiscord();
-		} catch ( ErrorException $e ) {
+		} catch ( Exception $e ) {
 			$return_value['message'] = $e->getMessage();
 			echo json_encode( $return_value );
 			wp_die();

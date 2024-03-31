@@ -26,6 +26,7 @@
 require_once 'views/settings.php';
 require_once 'views/index.php';
 require_once 'test/test.php';
+require_once 'common/get-movies.php';
 
 const OptionGroup                     = "movie-autopost";
 const OptionsDiscordWebhookUrl        = OptionGroup . '_discord-webhook-url';
@@ -172,6 +173,12 @@ function map_cron() {
 	update_option( OptionGroup . '_last-cron', date( 'd.m.Y H:i:s' ) );
 }
 
+function map_run_filter_query_test() {
+	$movies       = map_get_movies();
+	echo json_encode( $movies );
+	wp_die();
+}
+
 function map_cleanup() {
 	wp_clear_scheduled_hook( CronName );
 }
@@ -183,3 +190,4 @@ add_action( 'admin_init', callback: 'map_initialize_settings' );
 add_action( 'admin_menu', callback: 'map_configure_menus' );
 add_action('wp_ajax_movie_autopost_test_discord', 'map_run_discord_test');
 add_action('wp_ajax_movie_autopost_test_mastodon', 'map_run_mastodon_test');
+add_action('wp_ajax_movie_autopost_test_query', 'map_run_filter_query_test');

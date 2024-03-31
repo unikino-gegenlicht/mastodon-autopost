@@ -31,12 +31,21 @@ function map_overview_html() {
                     alert(response.message);
                 })
             }
+            function map_test_movie_filter() {
+                jQuery.post(ajaxurl, {action: "movie_autopost_test_query"}, function (responseContent) {
+                    let response = JSON.parse(responseContent)
+                    alert(response);
+                })
+            }
         </script>
         <button class="button" onclick="map_test_discord()">
             Test Discord Autopost
         </button>
         <button class="button" onclick="map_test_mastodon()">
             Test Mastodon Autopost
+        </button>
+        <button class="button" onclick="map_test_movie_filter()">
+            Test Movie Filter Query
         </button>
     </div>
 	<?php
