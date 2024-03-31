@@ -25,7 +25,6 @@
 
 require_once 'views/settings.php';
 require_once 'views/index.php';
-require_once 'cron.php';
 require_once 'test/test.php';
 
 const OptionGroup                     = "movie-autopost";
@@ -153,6 +152,24 @@ function map_register_cron() {
 	if ( ! wp_next_scheduled( CronName ) ) {
 		wp_schedule_event( 1711474200, 'daily', CronName );
 	}
+}
+
+function map_cron() {
+	$movies = map_get_movies();
+	foreach ( $movies as $movie ) {
+		try {
+			$movie->postToDiscord();
+		} catch ( Exception $e ) {
+			wp_mail(get_option( 'admin_email' ), '[Autopost] Unable to Post to Discord', $e->getMessage());
+		}
+		try {
+			$movie->postToMastodon();
+		} catch ( ErrorException $e ) {
+			wp_mail(get_option( 'admin_email' ), '[Autopost] Unable to Post to Mastodon', $e->getMessage());
+
+		}
+	}
+	update_option( OptionGroup . '_last-cron', date( 'd.m.Y H:i:s' ) );
 }
 
 function map_cleanup() {

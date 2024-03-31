@@ -9,7 +9,7 @@ function map_overview_html() {
         <table>
             <tr>
                 <th>Letzte Cron-Ausführung</th>
-                <td><?= get_option(OptionGroup.'-last-cron', 'unbekannt')?></td>
+                <td><?= get_option(OptionGroup.'_last-cron', 'unbekannt')?></td>
             </tr>
         </table>
 
