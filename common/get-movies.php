@@ -1,11 +1,13 @@
 <?php
 
+
 const metaQueryKey = 'hauptfilm_date';
 
 /**
- * @return Movie[]
+ * @return MAP_Movie[]
  */
-function get_movies(): array {
+function map_get_movies(): array {
+
 	$filter = array(
 		'post_type'      => 'film',
 		'meta_query'     => array(

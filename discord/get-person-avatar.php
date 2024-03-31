@@ -1,20 +1,26 @@
 <?php
 
-function get_person_avatar_url( Movie $movie ): string {
+
+
+function map_get_person_avatar_url( MAP_Movie $movie ): string {
 	$personName = $movie->proposedBy;
 
 	$filter = array(
 		'post_type' => 'team',
-		'name'      => $personName
+		'title'      => $personName
 	);
 
 	$posts = new WP_Query( $filter );
-	if (!$posts->have_posts()) {
-		return get_option(OptionsDiscordFallbackAvatarUrl);
-	}
 
 	while ($posts->have_posts()) {
-		return get_the_post_thumbnail_url($posts->post);
+		if ($posts->post->post_name == $personName) {
+			return get_the_post_thumbnail_url($posts->post);
+
+		}
+		$posts->next_post();
 	}
+
+	return get_option(OptionsDiscordFallbackAvatarUrl);
+
 
 }
