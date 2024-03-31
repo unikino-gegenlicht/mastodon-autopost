@@ -20,10 +20,16 @@ function map_overview_html() {
         </p>
         <script>
             function map_test_discord() {
-                jQuery.post(ajaxurl, {action: "movie_autopost_test_discord"})
+                jQuery.post(ajaxurl, {action: "movie_autopost_test_discord"}, function (responseContent) {
+                    let response = JSON.parse(responseContent)
+                    alert(response.message);
+                })
             }
             function map_test_mastodon() {
-                jQuery.post(ajaxurl, {action: "movie_autopost_test_mastodon"})
+                jQuery.post(ajaxurl, {action: "movie_autopost_test_mastodon"}, function (responseContent) {
+                    let response = JSON.parse(responseContent)
+                    alert(response.message);
+                })
             }
         </script>
         <button class="button" onclick="map_test_discord()">
