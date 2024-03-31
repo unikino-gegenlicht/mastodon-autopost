@@ -59,9 +59,9 @@ class MAP_Movie {
 	 */
 	private function getPostContent(): string {
 		$old_locale = get_locale();
-		setlocale(LC_ALL, "de_de");
-		$starting_time       = date( 'H:i', $this->start );
-		$weekday = date("l", $this->start);
+		setlocale( LC_ALL, "de_de" );
+		$starting_time = date( 'H:i', $this->start );
+		$weekday       = date( "l", $this->start );
 		$status_prefix = '';
 		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-3 day', $this->start ) ) ) {
 			$status_prefix = "In drei Tagen zeigen wir euch um $starting_time bei uns den Film $this->name. Ausgesucht wurde der Film von $this->proposedBy.";
@@ -75,10 +75,15 @@ class MAP_Movie {
 		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( 'today', $this->start ) ) ) {
 			$status_prefix = "Es ist endlich wieder $weekday und damit Zeit für einen neuen Film im Unikino. Wir freuen uns, euch heute um $starting_time den von $this->proposedBy ausgesuchten Film <i>$this->name</i> präsentieren zu dürfen.";
 		}
-		setlocale(LC_ALL, $old_locale);
-		return $status_prefix . eol . eol . $this->description . eol . eol . "Mehr Infos und Tickets unter: " . get_permalink( $this->wp_post_id ) . eol . eol . "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
+		setlocale( LC_ALL, $old_locale );
+
+		return $status_prefix . eol . eol . wp_trim_words( $this->description, 35, ' ...' ) . eol . eol . "Mehr Infos und Tickets unter: " . get_permalink( $this->wp_post_id ) . eol . eol . "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
 	}
 
+	/**
+	 * @return void
+	 * @throws Exception
+	 */
 	public function postToDiscord(): void {
 		$webhook_url = get_option( OptionsDiscordWebhookUrl );
 		if ( ! $webhook_url ) {
@@ -97,16 +102,17 @@ class MAP_Movie {
 	/**
 	 * Uploads the post thumbnail image to Mastodon.
 	 *
-	 * @return int The ID of the uploaded media on Mastodon.
+	 * @return int|null The ID of the uploaded media on Mastodon.
+	 * @throws ErrorException
 	 */
-	private function uploadPostThumbnailToMastodon(): int {
+	private function uploadPostThumbnailToMastodon(): ?int {
 		$token       = get_option( OptionsMastodonToken );
 		$instanceUrl = get_option( OptionsMastodonInstance );
 		if ( ! $token || ! $instanceUrl ) {
 			return - 1;
 		}
 
-		$image_url_path = get_the_post_thumbnail_url( $this->wp_post_id, size: 'original' );
+		$image_url_path = get_the_post_thumbnail_url( $this->wp_post_id, size: '2048x2048' );
 		$ch             = curl_init( $image_url_path );
 		curl_setopt( $ch, CURLOPT_HEADER, 0 );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
@@ -150,13 +156,22 @@ class MAP_Movie {
 		$media_status   = json_decode( $media_response, true );
 		$media_info     = curl_getinfo( $ch_media_status );
 		curl_close( $ch_media_status );
-		if ( $media_info['http_code'] == 202 ) {
-			sleep( 2.5 );
-		}
+		switch ( $media_info['http_code'] ) {
+			case 200:
+				return $media_status['id'];
+			case 202:
+				sleep( 2.5 );
 
-		return $media_status['id'];
+				return $media_status['id'];
+			default:
+				error_log( "Unable to upload post thumbnail:$eol$media_response" );
+				throw new ErrorException( "unable to upload post thumbnail: $eol$media_response" );
+		}
 	}
 
+	/**
+	 * @throws ErrorException
+	 */
 	public function postToMastodon(): void {
 		$token       = get_option( OptionsMastodonToken );
 		$instanceUrl = get_option( OptionsMastodonInstance );
@@ -172,7 +187,7 @@ class MAP_Movie {
 			"visibility" => "public",
 		);
 
-		if ( $media_id !== - 1 ) {
+		if ( $media_id != null ) {
 			$status_data["media_ids"] = array( $media_id );
 		}
 
@@ -188,7 +203,13 @@ class MAP_Movie {
 		curl_setopt( $ch_status, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $ch_status, CURLOPT_HTTPHEADER, $headers );
 		curl_setopt( $ch_status, CURLOPT_POSTFIELDS, $status );
-		$response = curl_exec( $ch_status );
+		$response      = curl_exec( $ch_status );
+		$response_info = curl_getinfo( $ch_status );
+
+		if ( $response_info['http_code'] != 200 ) {
+			throw new ErrorException( "Unable to post status update:" . eol . $response );
+		}
+
 		curl_close( $ch_status );
 	}
 }
