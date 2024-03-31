@@ -62,39 +62,34 @@ class MAP_Movie {
 	public bool $licensed;
 
 	/**
-	 * Retrieves the content for a post.
+	 * Retrieves the post prefix based on the start date of the movie.
 	 *
-	 * This method generates the content for a post based on the given parameters.
-	 * It includes a status prefix depending on the date of the post and concatenates it with the post description,
-	 * permalink, and hashtags.
-	 * The generated content is returned as a string.
-	 *
-	 * @return string The generated post content.
+	 * @return string The post prefix.
+	 * @throws Exception If an error occurs while formatting the start date.
 	 */
-	private function getPostContent(): string {
+	private function getPostPrefix(): string {
 		global $threeDaysFromNow, $twoDaysFromNow, $oneDayFromNow, $today;
-		$old_locale = get_locale();
-		setlocale( LC_ALL, "de_de" );
-		$starting_time = $this->start->format("H:i");
-		$weekday       = $this->start->format("l");
+		$starting_time = $this->start->format( "H:i" );
+		$weekday       = $this->start->format( "l" );
 		$status_prefix = '';
 
-		switch ( $this->start ) {
-			case $threeDaysFromNow:
-				$status_prefix = "In drei Tagen zeigen wir euch um $starting_time bei uns den Film $this->name. Ausgesucht wurde der Film von $this->proposedBy.";
+		switch ( $this->start->format( "d.m.Y" ) ) {
+			case $threeDaysFromNow->format( "d.m.Y" ):
+				$status_prefix = "In drei Tagen zeigen wir euch um $starting_time bei uns '$this->name'. Ausgesucht wurde der Film von $this->proposedBy.";
 				break;
-			case $twoDaysFromNow:
-				$status_prefix = "Der $weekday rückt näher und wir freuen uns, euch in zwei Tagen den Film $this->name präsentieren zu dürfen.";
+			case $twoDaysFromNow->format( "d.m.Y" ):
+				$status_prefix = "Der $weekday rückt näher und wir freuen uns, euch in zwei Tagen '$this->name' präsentieren zu dürfen.";
 				break;
-			case $oneDayFromNow:
-				$status_prefix = "Morgen ist $weekday und das heißt für euch, dass ihr euch $this->name bei uns im Unikino nicht entgehen lassen dürft.";
+			case $oneDayFromNow->format( "d.m.Y" ):
+				$status_prefix = "Morgen ist $weekday und das heißt für euch, dass ihr euch '$this->name' bei uns im Unikino nicht entgehen lassen dürft.";
 				break;
-			case $today:
-				$status_prefix = "Es ist endlich wieder $weekday und damit Zeit für einen neuen Film im Unikino. Wir freuen uns, euch heute um $starting_time den von $this->proposedBy ausgesuchten Film <i>$this->name</i> präsentieren zu dürfen.";
+			case $today->format( "d.m.Y" ):
+				$status_prefix = "Es ist endlich wieder $weekday und damit Zeit für einen Abend im GEGENLICHT. Wir und $this->proposedBy freuen uns, euch heute um $starting_time Uhr '$this->name' präsentieren zu dürfen.";
 				break;
 		}
 
-		return $status_prefix . eol . eol . wp_trim_words( $this->description, 35, ' ...' ) . eol . eol . "Mehr Infos und Tickets unter: " . get_permalink( $this->wp_post_id ) . eol . eol . "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
+		return $status_prefix;
+
 	}
 
 	/**
@@ -107,10 +102,15 @@ class MAP_Movie {
 			return;
 		}
 
+		$content = $this->getPostPrefix() . eol . eol;
+		$content .= $this->description;
+		$content .= eol;
+		$content .= eol;
+		$content .= "Mehr Infos und Reservierungen unter [gegenlicht.net](" . get_permalink( $this->wp_post_id ) . ")";
 
 		$message = Discord::message( $webhook_url );
 		$message->setUsername( $this->proposedBy );
-		$message->setContent( $this->getPostContent() );
+		$message->setContent( $content );
 		$message->setImage( get_the_post_thumbnail_url( $this->wp_post_id, size: 'original' ) );
 		$message->setAvatarUrl( map_get_person_avatar_url( $this ) );
 		$message->send();
@@ -198,8 +198,32 @@ class MAP_Movie {
 
 		$media_id = $this->uploadPostThumbnailToMastodon();
 
+		$status_message = $this->getPostPrefix() .
+		                  eol .
+		                  eol .
+		                  wp_trim_words( $this->description, 55, '...' ) .
+		                  eol .
+		                  "Mehr Infos unter " . get_permalink( $this->wp_post_id ) .
+		                  eol .
+		                  eol .
+		                  "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
+
+		$words = 55;
+		while ( strlen( $status_message ) > 500 ) {
+			$status_message = $this->getPostPrefix() .
+			                  eol .
+			                  eol .
+			                  wp_trim_words( $this->description, $words, '...' ) .
+			                  eol .
+			                  "Mehr Infos unter " . get_permalink( $this->wp_post_id ) .
+			                  eol .
+			                  eol .
+			                  "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
+			$words          = $words - 1;
+		}
+
 		$status_data = array(
-			"status"     => $this->getPostContent(),
+			"status"     => $status_message,
 			"language"   => "de",
 			"visibility" => "public",
 		);
@@ -208,10 +232,10 @@ class MAP_Movie {
 			$status_data["media_ids"] = array( $media_id );
 		}
 
-		$status  = json_encode( $status_data );
+
 		$headers = [
 			"Authorization: Bearer $token",
-			'Content-Type: application/json'
+			"Content-Type: application/json",
 		];
 
 		$ch_status = curl_init();
@@ -219,7 +243,7 @@ class MAP_Movie {
 		curl_setopt( $ch_status, CURLOPT_POST, 1 );
 		curl_setopt( $ch_status, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $ch_status, CURLOPT_HTTPHEADER, $headers );
-		curl_setopt( $ch_status, CURLOPT_POSTFIELDS, $status );
+		curl_setopt( $ch_status, CURLOPT_POSTFIELDS, json_encode( $status_data ) );
 		$response      = curl_exec( $ch_status );
 		$response_info = curl_getinfo( $ch_status );
 

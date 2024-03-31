@@ -23,6 +23,8 @@
  * along with Mastodon Auto Post Filme. If not, see <https://www.gnu.org/licenses/gpl-2.0.html/>.
  */
 
+use JetBrains\PhpStorm\NoReturn;
+
 require_once 'views/settings.php';
 require_once 'views/index.php';
 require_once 'test/test.php';
@@ -33,7 +35,7 @@ const OptionsDiscordWebhookUrl        = OptionGroup . '_discord-webhook-url';
 const OptionsDiscordFallbackAvatarUrl = OptionGroup . '_discord-fallback-avatar-url';
 const OptionsMastodonInstance         = OptionGroup . '_mastodon-instance';
 const OptionsMastodonToken            = OptionGroup . '_mastodon-api-key';
-const OptionsTestPostID            = OptionGroup . '_test-post-id';
+const OptionsTestPostID               = OptionGroup . '_test-post-id';
 
 const CronName = "movie-autopost_cron";
 
@@ -131,7 +133,7 @@ function map_initialize_settings() {
 			"description" => "Der API-Key für die Mastodon Instanz"
 		)
 	);
-	add_settings_section('default', 'Sonstiges', '', OptionGroup);
+	add_settings_section( 'default', 'Sonstiges', '', OptionGroup );
 	add_settings_field(
 		OptionsTestPostID,
 		'Access Token',
@@ -151,22 +153,22 @@ function map_register_cron() {
 	add_action( CronName, 'map_cron' );
 	add_option( OptionGroup . '_last-cron' );
 	if ( ! wp_next_scheduled( CronName ) ) {
-		wp_schedule_event( 1711474200, 'daily', CronName );
+		wp_schedule_event( 1711918800, 'daily', CronName );
 	}
 }
 
-function map_cron() {
+function map_cron(): void {
 	$movies = map_get_movies();
 	foreach ( $movies as $movie ) {
 		try {
 			$movie->postToDiscord();
 		} catch ( Exception $e ) {
-			wp_mail(get_option( 'admin_email' ), '[Autopost] Unable to Post to Discord', $e->getMessage());
+			wp_mail( get_option( 'admin_email' ), '[Autopost] Unable to Post to Discord', $e->getMessage() );
 		}
 		try {
 			$movie->postToMastodon();
 		} catch ( ErrorException $e ) {
-			wp_mail(get_option( 'admin_email' ), '[Autopost] Unable to Post to Mastodon', $e->getMessage());
+			wp_mail( get_option( 'admin_email' ), '[Autopost] Unable to Post to Mastodon', $e->getMessage() );
 
 		}
 	}
