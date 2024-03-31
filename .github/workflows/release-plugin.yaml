@@ -1,0 +1,52 @@
+on:
+  push:
+    tags:
+      - v*
+jobs:
+  get-dependencies:
+    name: Collect Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - uses: php-actions/composer@v6
+        name: Install Composer Dependencies
+      - uses: actions/upload-artifact@v4
+        name: Create Release Content Artifact
+        with:
+          name: movie-autopost-plugin
+          path: |
+            ./common
+            ./discord
+            ./test
+            ./vendor
+            ./views
+            cron.php
+            LICENSE
+            MAP_Movie.php
+            movie-autopost.php
+            README.md
+  release-package:
+    name: Create Release Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs:
+      - get-dependencies
+    steps:
+      - uses: actions/upload-artifact@v4
+        name: Download Release Contents
+        with:
+          name: movie-autopost-plugin
+          path: movie-autopost
+      - uses: thedoctor0/zip-release@0.7.6
+        name: Create Archive for Release
+        with:
+          type: 'zip'
+          filename: 'movie-autopost-${{github.ref_name}}.zip'
+      - uses: ncipollo/release-action@v1
+        name: Publish Release
+        with:
+          artifacts: 'movie-autopost-${{github.ref_name}}.zip'
+          generateReleaseNotes: true
+
