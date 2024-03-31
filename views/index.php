@@ -37,6 +37,12 @@ function map_overview_html() {
                     alert(response);
                 })
             }
+            function map_test_execute_cron() {
+                jQuery.post(ajaxurl, {action: "movie_autopost_execute_cron_manually"}, function (responseContent) {
+                    let response = JSON.parse(responseContent)
+                    alert(response);
+                })
+            }
         </script>
         <button class="button" onclick="map_test_discord()">
             Test Discord Autopost
@@ -46,6 +52,9 @@ function map_overview_html() {
         </button>
         <button class="button" onclick="map_test_movie_filter()">
             Test Movie Filter Query
+        </button>
+        <button class="button" onclick="map_test_execute_cron()">
+            Run Cron Task Manually
         </button>
     </div>
 	<?php

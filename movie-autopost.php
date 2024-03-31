@@ -174,8 +174,13 @@ function map_cron() {
 }
 
 function map_run_filter_query_test() {
-	$movies       = map_get_movies();
+	$movies = map_get_movies();
 	echo json_encode( $movies );
+	wp_die();
+}
+
+#[NoReturn] function map_run_cron(): void {
+	map_cron();
 	wp_die();
 }
 
@@ -183,11 +188,12 @@ function map_cleanup() {
 	wp_clear_scheduled_hook( CronName );
 }
 
-register_activation_hook( __FILE__, 'map_register_cron' );
 register_deactivation_hook( __FILE__, 'map_cleanup' );
 
 add_action( 'admin_init', callback: 'map_initialize_settings' );
 add_action( 'admin_menu', callback: 'map_configure_menus' );
-add_action('wp_ajax_movie_autopost_test_discord', 'map_run_discord_test');
-add_action('wp_ajax_movie_autopost_test_mastodon', 'map_run_mastodon_test');
-add_action('wp_ajax_movie_autopost_test_query', 'map_run_filter_query_test');
+add_action('init', 'map_register_cron');
+add_action( 'wp_ajax_movie_autopost_test_discord', 'map_run_discord_test' );
+add_action( 'wp_ajax_movie_autopost_test_mastodon', 'map_run_mastodon_test' );
+add_action( 'wp_ajax_movie_autopost_test_query', 'map_run_filter_query_test' );
+add_action( 'wp_ajax_movie_autopost_execute_cron_manually', 'map_run_cron' );
