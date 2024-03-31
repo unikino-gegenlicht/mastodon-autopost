@@ -148,7 +148,7 @@ function map_initialize_settings() {
 }
 
 function map_register_cron() {
-	add_action( CronName, 'cron' );
+	add_action( CronName, 'map_cron' );
 	add_option( OptionGroup . '_last-cron' );
 	if ( ! wp_next_scheduled( CronName ) ) {
 		wp_schedule_event( 1711474200, 'daily', CronName );
