@@ -47,10 +47,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return void
  */
-function configure_menus() {
-	add_menu_page( 'Social Media Autopost', 'Social Media Autopost', 'manage_options', 'social_media_autopost' );
-	add_submenu_page( 'social_media_autopost', 'Configuration', 'Configuration', 'manage_options', 'social_media_autopost-config' );
-	add_submenu_page( 'social_media_autopost', 'Tests', 'Tests', 'manage_options', 'social_media_autopost-tests' );
+function map_configure_menus() {
+	add_menu_page( 'Social Media Autopost', 'Social Media Autopost', 'manage_options', OptionGroup, 'map_overview_html' );
+	add_submenu_page( OptionGroup, 'Einstellungen', 'Einstellungen', 'manage_options', OptionGroup . '-settings', 'map_settings_html' );
 }
 
 /**
