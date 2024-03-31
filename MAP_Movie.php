@@ -58,21 +58,24 @@ class MAP_Movie {
 	 * @return string The generated post content.
 	 */
 	private function getPostContent(): string {
-		$uhrzeit       = date( 'H:i', $this->start );
+		$old_locale = get_locale();
+		setlocale(LC_ALL, "de_de");
+		$starting_time       = date( 'H:i', $this->start );
+		$weekday = date("l", $this->start);
 		$status_prefix = '';
 		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-3 day', $this->start ) ) ) {
-			$status_prefix = "In drei Tagen zeigen wir euch um $uhrzeit bei uns den Film $this->name. Ausgesucht wurde der Film von $this->proposedBy.";
+			$status_prefix = "In drei Tagen zeigen wir euch um $starting_time bei uns den Film $this->name. Ausgesucht wurde der Film von $this->proposedBy.";
 		}
 		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-2 day', $this->start ) ) ) {
-			$status_prefix = "Der Mittwoch rückt näher und wir freuen uns, euch in zwei Tagen den Film $this->name präsentieren zu dürfen.";
+			$status_prefix = "Der $weekday rückt näher und wir freuen uns, euch in zwei Tagen den Film $this->name präsentieren zu dürfen.";
 		}
 		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( '-1 day', $this->start ) ) ) {
-			$status_prefix = "Morgen ist Mittwoch und das heißt für euch, dass ihr euch $this->name bei uns im Unikino nicht entgehen lassen dürft.";
+			$status_prefix = "Morgen ist $weekday und das heißt für euch, dass ihr euch $this->name bei uns im Unikino nicht entgehen lassen dürft.";
 		}
 		if ( date( 'Y-m-d' ) == date( 'Y-m-d', strtotime( 'today', $this->start ) ) ) {
-			$status_prefix = "Es ist endlich wieder Mittwoch und damit Zeit für einen neuen Film im Unikino. Wir freuen uns, euch heute um $uhrzeit den von $this->proposedBy ausgesuchten Film <i>$this->name</i> präsentieren zu dürfen.";
+			$status_prefix = "Es ist endlich wieder $weekday und damit Zeit für einen neuen Film im Unikino. Wir freuen uns, euch heute um $starting_time den von $this->proposedBy ausgesuchten Film <i>$this->name</i> präsentieren zu dürfen.";
 		}
-
+		setlocale(LC_ALL, $old_locale);
 		return $status_prefix . eol . eol . $this->description . eol . eol . "Mehr Infos und Tickets unter: " . get_permalink( $this->wp_post_id ) . eol . eol . "#kino #uni #oldenburg #$this->gerne #unikinos #uni_oldenburg #gegenlicht";
 	}
 
