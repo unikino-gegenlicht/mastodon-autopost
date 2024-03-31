@@ -40,7 +40,6 @@ function map_get_movies(): array {
 		$dateLimit          = $dateLimit->setTimezone( new DateTimeZone( "Europe/Berlin" ) );
 
 		if ( ! ( $movieStartDateTime <= $dateLimit ) ) {
-			error_log( "$post->post_name after " . $dateLimit->format( "d.m.Y" ) );
 			continue;
 		}
 		$start_time_data    = date_parse( $movieStart );
