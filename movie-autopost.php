@@ -23,12 +23,17 @@
  * along with Mastodon Auto Post Filme. If not, see <https://www.gnu.org/licenses/gpl-2.0.html/>.
  */
 
-const OptionsPrefix               = "movie-autopost";
-const OptionsSeparator            = '_';
-const OptionsDiscordWebhookUrl = OptionsPrefix . OptionsSeparator . 'discord-webhook-url';
-const OptionsDiscordFallbackAvatarUrl = OptionsPrefix.OptionsSeparator.'discord-fallback-avatar-url';
-const OptionsMastodonInstance  = OptionsPrefix . OptionsSeparator . 'mastodon-instance';
-const OptionsMastodonToken     = OptionsPrefix . OptionsSeparator . 'mastodon-api-key';
+require_once 'views/settings.php';
+require_once 'views/index.php';
+require_once 'cron.php';
+require_once 'test/test.php';
+
+const OptionGroup                     = "movie-autopost";
+const OptionsDiscordWebhookUrl        = OptionGroup . '_discord-webhook-url';
+const OptionsDiscordFallbackAvatarUrl = OptionGroup . '_discord-fallback-avatar-url';
+const OptionsMastodonInstance         = OptionGroup . '_mastodon-instance';
+const OptionsMastodonToken            = OptionGroup . '_mastodon-api-key';
+const OptionsTestPostID            = OptionGroup . '_test-post-id';
 
 const CronName = "movie-autopost_cron";
 
@@ -55,27 +60,110 @@ function configure_menus() {
  *
  * @return void
  */
-function initialize_settings() {
-	register_setting( "options", OptionsDiscordWebhookUrl );
-	register_setting( "options", OptionsDiscordFallbackAvatarUrl );
-	register_setting( "options", OptionsMastodonInstance );
-	register_setting( "options", OptionsMastodonToken );
+function map_initialize_settings() {
+	add_option( OptionsDiscordWebhookUrl );
+	add_option( OptionsDiscordFallbackAvatarUrl );
+	add_option( OptionsMastodonInstance );
+	add_option( OptionsMastodonToken );
+	add_option( OptionsTestPostID );
+	register_setting( OptionGroup, OptionsDiscordWebhookUrl, array(
+		"type"        => "string",
+		"description" => "Die Webhook URL über die die Discord-Nachrichten verschickt werden"
+	) );
+	register_setting( OptionGroup, OptionsDiscordFallbackAvatarUrl, array(
+		"type"        => "string",
+		"description" => "Eine URL zu einem Bild, das als Avatar verwendet wird, wenn kein Avatar für das Teammitglied bekannt ist"
+	) );
+	register_setting( OptionGroup, OptionsMastodonInstance, array(
+		"type"        => "string",
+		"description" => "Die URL zu der Mastodon Instanz, auf der der Post abgesetzt wird"
+	) );
+	register_setting( OptionGroup, OptionsMastodonToken, array(
+		"type"        => "string",
+		"description" => "Der API-Token um auf Mastodon zugreifen zu können"
+	) );
+	register_setting( OptionGroup, OptionsTestPostID, array(
+		"type"        => "string",
+		"description" => "Die ID des Posts, der zum testen des Plugins verwendet werden soll"
+	) );
+	add_settings_section( OptionGroup . '-discord', 'Discord', 'map_render_discord_section', OptionGroup );
+	add_settings_field(
+		OptionsDiscordWebhookUrl,
+		'Discord Webhook URL',
+		'map_render_url_input',
+		OptionGroup,
+		OptionGroup . '-discord',
+		array(
+			"id"          => OptionsDiscordWebhookUrl,
+			"description" => "URL an die der Film geschickt wird"
+		)
+	);
+	add_settings_field(
+		OptionsDiscordFallbackAvatarUrl,
+		'Discord Avatar Fallback URL',
+		'map_render_url_input',
+		OptionGroup,
+		OptionGroup . '-discord',
+		array(
+			"id"          => OptionsDiscordFallbackAvatarUrl,
+			"description" => "Der Avatar, der verwendet werden soll, wenn kein anderer verfügbar ist"
+		)
+	);
+	add_settings_section( OptionGroup . '-mastodon', 'Mastodon', 'map_render_mastodon_section', OptionGroup );
+	add_settings_field(
+		OptionsMastodonInstance,
+		'Mastodon Instance URL',
+		'map_render_url_input',
+		OptionGroup,
+		OptionGroup . '-mastodon',
+		array(
+			"id"          => OptionsMastodonInstance,
+			"description" => "Die Mastodon-Instanz die zum posten verwendet wird"
+		)
+	);
+	add_settings_field(
+		OptionsMastodonToken,
+		'Access Token',
+		'map_render_password_input',
+		OptionGroup,
+		OptionGroup . '-mastodon',
+		array(
+			"id"          => OptionsMastodonToken,
+			"description" => "Der API-Key für die Mastodon Instanz"
+		)
+	);
+	add_settings_section('default', 'Sonstiges', '', OptionGroup);
+	add_settings_field(
+		OptionsTestPostID,
+		'Access Token',
+		'map_render_text_input',
+		OptionGroup,
+		'default',
+		array(
+			"id"          => OptionsTestPostID,
+			"description" => "Die Post-ID, die zum testen des Plugins verwendet wird"
+		)
+	);
+
+
 }
 
-function register_cron() {
+function map_register_cron() {
 	add_action( CronName, 'cron' );
-	register_deactivation_hook( __FILE__, 'deregister_cron' );
+	add_option( OptionGroup . '_last-cron' );
 	if ( ! wp_next_scheduled( CronName ) ) {
 		wp_schedule_event( 1711474200, 'daily', CronName );
 	}
 }
 
-function deregister_cron() {
+function map_cleanup() {
 	wp_clear_scheduled_hook( CronName );
 }
 
-add_action( 'admin_menu', callback: 'configure_menus' );
-add_action( 'init', callback: 'initialize_settings' );
-add_action( 'init', callback: 'register_cron' );
+register_activation_hook( __FILE__, 'map_register_cron' );
+register_deactivation_hook( __FILE__, 'map_cleanup' );
 
-
+add_action( 'admin_init', callback: 'map_initialize_settings' );
+add_action( 'admin_menu', callback: 'map_configure_menus' );
+add_action('wp_ajax_movie_autopost_test_discord', 'map_run_discord_test');
+add_action('wp_ajax_movie_autopost_test_mastodon', 'map_run_mastodon_test');
