@@ -93,7 +93,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	// now build the post depending on the movies returned by the query and the day filtering
 	$status_message = get_opener_line() . eol . eol;
 	$status_message .= table( $table_data ) . eol . eol;
-	$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen unter: https://gegenlicht.net' . eol . eol;
+	$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen unter: https://gegenlicht.net/programm' . eol . eol;
 	$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
 
 
