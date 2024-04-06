@@ -13,7 +13,7 @@ function map_upload_movie_thumbnail_to_mastodon( MAP_Movie $movie ): ?int {
 	$token       = get_option( OptionsMastodonToken );
 	$instanceUrl = get_option( OptionsMastodonInstance );
 	if ( ! $token || ! $instanceUrl ) {
-		return - 1;
+		return null;
 	}
 
 	$image_url_path = get_the_post_thumbnail_url( $movie->wp_post_id, size: '2048x2048' );
@@ -54,5 +54,5 @@ function map_upload_movie_thumbnail_to_mastodon( MAP_Movie $movie ): ?int {
 		return json_decode( $result['response'] )['id'];
 	}
 
-	return null;
+	throw new ErrorException("Unable to upload media to mastodon:".eol.eol.$result['response']);
 }
