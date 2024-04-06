@@ -1,5 +1,5 @@
 <?php
-include __DIR__ . '../vendor/autoload.php';
+include plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 
 use PhpChannels\DiscordWebhook\Discord;
 
@@ -11,7 +11,7 @@ use PhpChannels\DiscordWebhook\Discord;
  * @return void
  * @throws Exception
  */
-function postToDiscord( array $movies ): void {
+function postToDiscord( array $movies, bool $testing = false ): void {
 	$webhook_url = get_option( OptionsDiscordWebhookUrl );
 	if ( ! $webhook_url ) {
 		return;
@@ -21,7 +21,9 @@ function postToDiscord( array $movies ): void {
 	$tz          = new DateTimeZone( 'Europe/Berlin' );
 	$now         = new DateTimeImmutable( null, timezone: $tz );
 	foreach ( $movies as $movie ) {
-		if ( $movie->start->diff( $now )->days == 0 ) {
+		if ( $movie->start->diff( $now )->days == 0 && ! $testing ) {
+			$moviesToday[] = $movie;
+		} else if ( $testing ) {
 			$moviesToday[] = $movie;
 		}
 	}
