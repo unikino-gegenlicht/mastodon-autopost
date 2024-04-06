@@ -21,6 +21,7 @@ jobs:
             ./test
             ./vendor
             ./views
+            ./mastodon
             cron.php
             LICENSE
             MAP_Movie.php
