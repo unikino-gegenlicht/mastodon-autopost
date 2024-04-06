@@ -24,8 +24,6 @@
  * along with Mastodon Auto Post Filme. If not, see <https://www.gnu.org/licenses/gpl-2.0.html/>.
  */
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once 'views/settings.php';
 require_once 'views/index.php';
 require_once 'test/test.php';
@@ -180,7 +178,7 @@ function map_run_filter_query_test() {
 	wp_die();
 }
 
-#[NoReturn] function map_run_cron(): void {
+function map_run_cron(): void {
 	map_cron(true);
 	wp_die();
 }
