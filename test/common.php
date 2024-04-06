@@ -28,8 +28,8 @@ function map_get_test_movies(): array {
 		$movie              = new MAP_Movie();
 		$post               = $posts->post;
 		$movieDate          = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
-		$movieStart         = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
-		$movie->start       = strtotime( "$movieDate $movieStart:00" );
+		$movieStartTime         = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
+		$movie->start       = DateTimeImmutable::createFromFormat( "Y-m-d H:i", "$movieDate $movieStartTime", new DateTimeZone('Europe/Berlin') );
 		$movie->name        = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
 		$movie->description = sanitize_text_field( get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true ) );
 		$movie->gerne       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
