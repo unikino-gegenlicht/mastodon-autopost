@@ -3,10 +3,13 @@
 
 const metaQueryKey = 'hauptfilm_date';
 
+$tz = new DateTimeZone( 'Europe/Berlin' );
+
 /**
  * @return MAP_Movie[]
  */
 function map_get_movies(): array {
+	global $tz;
 
 	$filter = array(
 		'post_type'      => 'film',
@@ -32,33 +35,35 @@ function map_get_movies(): array {
 	}
 	$movies = array();
 	foreach ( $posts->get_posts() as $post ) {
+		$movieDate      = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
+		$movieStartTime = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
 
-		$movieDate          = get_post_meta( $post->ID, 'hauptfilm_date', single: true );
-		$movieStart         = get_post_meta( $post->ID, 'hauptfilm_time', single: true );
-		$movieStartDateTime = DateTimeImmutable::createFromFormat( "Y-m-d", "$movieDate", new DateTimeZone( "Europe/Berlin" ) );
-		$dateLimit          = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( '+3 day ' ) ), new DateTimeZone( 'UTC' ) );
-		$dateLimit          = $dateLimit->setTimezone( new DateTimeZone( "Europe/Berlin" ) );
+		$movieStart = DateTimeImmutable::createFromFormat( "Y-m-d H:i", "$movieDate $movieStartTime", $tz );
+		$now        = new DateTimeImmutable( null, timezone: $tz );
 
-		if ( ! ( $movieStartDateTime <= $dateLimit ) ) {
+		$daysUntilScreening = $movieStart->diff( $now )->days;
+
+		if ( $daysUntilScreening >= 3 ) {
 			continue;
 		}
-		$start_time_data    = date_parse( $movieStart );
-		$movieStartDateTime = $movieStartDateTime->setTime( $start_time_data['hour'], $start_time_data['minute'] );
-		$movie              = new MAP_Movie();
-		$movie->start       = $movieStartDateTime;
-		$movieLicensed      = get_post_meta( $post->ID, 'hauptfilm_license_ok', single: true ) == 1;
+
+		$movie         = new MAP_Movie();
+		$movie->start  = $movieStart;
+		$movieLicensed = get_post_meta( $post->ID, 'hauptfilm_license_ok', single: true ) == 1;
 		if ( ! $movieLicensed ) {
 			$movie->name = $post->post_title;
 		} else {
-
 			$movie->name = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
 		}
 		$movie->description = sanitize_text_field( get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true ) );
 		$movie->gerne       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
 		$movie->proposedBy  = get_post_meta( $post->ID, 'weiteres_selected_by_name', single: true );
-		$movie->licensed    = get_post_meta( $post->ID, 'hauptfilm_license_ok', true );
+		$movie->licensed    = $movieLicensed;
 		$movie->wp_post_id  = $post->ID;
-		array_push( $movies, $movie );
+
+		$movies[] = $movie;
+
+
 	}
 
 	return $movies;
