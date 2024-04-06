@@ -1,6 +1,8 @@
 <?php
 
 require plugin_dir_path(__FILE__). '../common/table.php';
+require plugin_dir_path(__FILE__). 'MAP_Mastodon_API.php';
+require plugin_dir_path(__FILE__). 'upload-media.php';
 
 $api = new MAP_Mastodon_API();
 
@@ -51,6 +53,10 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	$now             = new DateTimeImmutable( null, timezone: $tz );
 	$unlicensedMovie = false;
 	foreach ( $movies as $movie ) {
+		if ($testing) {
+			$moviesToday[] = $movie;
+			continue;
+		}
 		switch ( $movie->start->diff( $now )->days ) {
 			case 3:
 			case 2:
@@ -64,6 +70,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 		if ( ! $unlicensedMovie ) {
 			$unlicensedMovie = $movie->licensed;
 		}
+
 	}
 
 	// sort the collected movies by their date
@@ -72,12 +79,16 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	} );
 
 	// check if the movies are the same to stop spam posting
-	$oldCollectedMovies = get_option( 'map_movie_collected_movies_last_mastodon' );
-	if ( $oldCollectedMovies == $collectedMovies ) {
-		return;
+	if (!$testing) {
+		$oldCollectedMovies = get_option( 'map_movie_collected_movies_last_mastodon' );
+		if ( $oldCollectedMovies == $collectedMovies ) {
+			return;
+		}
+		update_option( 'map_movie_collected_movies_last_mastodon', $collectedMovies );
+
 	}
 
-	update_option( 'map_movie_collected_movies_last_mastodon', $collectedMovies );
+
 
 
 	$table_data = array();
@@ -143,7 +154,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	}
 
 	foreach ( $updates as $status ) {
-		$result = $api->postJSON( "/", $status );
+		$result = $api->postJSON( "/api/v1/statuses", $status );
 		if ( $result['http_code'] != 200 ) {
 			throw new ErrorException( "Unable to post status update:" . eol . eol . $result['response'] );
 		}
