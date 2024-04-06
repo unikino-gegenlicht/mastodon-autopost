@@ -113,7 +113,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	$status_data = array(
 		"status"     => $status_message,
 		"language"   => "de",
-		"visibility" => $testing ? 'direct' : 'public',
+		"visibility" => $testing ? 'private' : 'public',
 	);
 
 	$updates   = array();
@@ -122,10 +122,10 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	// now handle the movies that are shown today
 	foreach ( $moviesToday as $movie ) {
 		$status_message = get_opener_line() . eol . eol;
-		$status_message .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+		$status_message .= "Heute um " . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 		$status_message .= wp_trim_words( $movie->description, more: '...' ) . eol . eol;
 		$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
-		$status_message .= '#' . preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) . ' ';
+		$status_message .= '#' . strtolower(preg_replace( '/([\s\-\+]+)/', '_', $movie->genre )) . ' ';
 		$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
 
 		// now trim the status message to be below the max amount of characters of 500
@@ -136,14 +136,14 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 			$status_message .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 			$status_message .= wp_trim_words( $movie->description, $max_excerpt_words, more: '...' ) . eol . eol;
 			$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
-			$status_message .= '#' . preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) . ' ';
+			$status_message .= '#' . strtolower(preg_replace( '/([\s\-\+]+)/', '_', $movie->genre )) . ' ';
 			$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
 		}
 
 		$status_data = array(
 			"status"     => $status_message,
 			"language"   => "de",
-			"visibility" => $testing ? 'direct' : 'public',
+			"visibility" => $testing ? 'private' : 'public',
 		);
 
 		$media_id = map_upload_movie_thumbnail_to_mastodon( $movie );
