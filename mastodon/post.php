@@ -72,12 +72,12 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	} );
 
 	// check if the movies are the same to stop spam posting
-	$oldCollectedMovies = get_option( 'map_movie_collected_movies_last' );
+	$oldCollectedMovies = get_option( 'map_movie_collected_movies_last_mastodon' );
 	if ( $oldCollectedMovies == $collectedMovies ) {
 		return;
 	}
 
-	update_option( 'map_movie_collected_movies_last', $collectedMovies );
+	update_option( 'map_movie_collected_movies_last_mastodon', $collectedMovies );
 
 
 	$table_data = array();
