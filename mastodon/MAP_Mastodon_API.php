@@ -1,5 +1,10 @@
 <?php
 
+const OptionGroup                     = "movie-autopost";
+
+const OptionsMastodonInstance         = OptionGroup . '_mastodon-instance';
+const OptionsMastodonToken            = OptionGroup . '_mastodon-api-key';
+
 class MAP_Mastodon_API {
 	private string $apiToken;
 	public readonly string $instance;
