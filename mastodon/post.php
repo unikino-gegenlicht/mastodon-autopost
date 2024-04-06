@@ -1,6 +1,6 @@
 <?php
 
-require '../common/table.php';
+require plugin_dir_path(__FILE__). '../common/table.php';
 
 $api = new MAP_Mastodon_API();
 
