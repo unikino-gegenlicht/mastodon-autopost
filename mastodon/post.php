@@ -3,7 +3,7 @@
 require plugin_dir_path(__FILE__). '../common/table.php';
 require plugin_dir_path(__FILE__). 'MAP_Mastodon_API.php';
 require plugin_dir_path(__FILE__). 'upload-media.php';
-require plugin_dir_path(__FILE__). '../consts.php';
+require_once plugin_dir_path(__FILE__). '../consts.php';
 
 
 $tz = new DateTimeZone( 'Europe/Berlin' );

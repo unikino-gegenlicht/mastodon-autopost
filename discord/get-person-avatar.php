@@ -1,5 +1,5 @@
 <?php
-require plugin_dir_path( __FILE__ ) . '../consts.php';
+require_once plugin_dir_path(__FILE__). '../consts.php';
 
 
 
