@@ -4,9 +4,11 @@
 const metaQueryKey = 'hauptfilm_date';
 
 $tz = new DateTimeZone( 'Europe/Berlin' );
-
 /**
- * @return MAP_Movie[]
+ * Retrieves an array of movies based on specified criteria.
+ *
+ * @return array An array of MAP_Movie objects.
+ * @throws Exception If there is an error while retrieving the movies.
  */
 function map_get_movies(): array {
 	global $tz;
@@ -43,7 +45,7 @@ function map_get_movies(): array {
 
 		$daysUntilScreening = $movieStart->diff( $now )->days;
 
-		if ( $daysUntilScreening >= 3 ) {
+		if ( $daysUntilScreening > 3 ) {
 			continue;
 		}
 
