@@ -3,8 +3,8 @@
 require plugin_dir_path(__FILE__). '../common/table.php';
 require plugin_dir_path(__FILE__). 'MAP_Mastodon_API.php';
 require plugin_dir_path(__FILE__). 'upload-media.php';
+require plugin_dir_path(__FILE__). '../consts.php';
 
-$api = new MAP_Mastodon_API();
 
 $tz = new DateTimeZone( 'Europe/Berlin' );
 
@@ -41,7 +41,9 @@ function get_opener_line( $for_single_movie = false ): string {
  * @throws ErrorException If unable to post the status update.
  */
 function map_post_movies_to_mastodon( array $movies, bool $testing = false ): void {
-	global $tz, $api;
+	global $tz;
+	$api = new MAP_Mastodon_API();
+
 	$token       = get_option( OptionsMastodonToken );
 	$instanceUrl = get_option( OptionsMastodonInstance );
 	if ( ! $token || ! $instanceUrl ) {
@@ -128,7 +130,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 
 		// now trim the status message to be below the max amount of characters of 500
 		$max_excerpt_words = 55;
-		while ( strlen( $status_message > 500 ) ) {
+		while ( strlen( $status_message ) > 500 ) {
 			$max_excerpt_words --;
 			$status_message = get_opener_line() . eol . eol;
 			$status_message .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;

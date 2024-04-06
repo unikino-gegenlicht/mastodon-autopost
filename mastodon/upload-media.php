@@ -1,5 +1,7 @@
 <?php
 
+require_once plugin_dir_path( __FILE__ ) . '../consts.php';
+
 /**
  * Uploads the movie thumbnail to Mastodon.
  *
@@ -9,13 +11,7 @@
  * @throws ErrorException If unable to upload the post thumbnail.
  */
 function map_upload_movie_thumbnail_to_mastodon( MAP_Movie $movie ): ?int {
-	global $api;
-	$token       = get_option( OptionsMastodonToken );
-	$instanceUrl = get_option( OptionsMastodonInstance );
-	if ( ! $token || ! $instanceUrl ) {
-		return null;
-	}
-
+	$api            = new MAP_Mastodon_API();
 	$image_url_path = get_the_post_thumbnail_url( $movie->wp_post_id, size: '2048x2048' );
 	$ch             = curl_init( $image_url_path );
 	curl_setopt( $ch, CURLOPT_HEADER, 0 );
@@ -44,15 +40,15 @@ function map_upload_movie_thumbnail_to_mastodon( MAP_Movie $movie ): ?int {
 	$post_data .= $raw_image . $eol;
 	$post_data .= "--" . $delimiter . "--";
 
-	$result = $api->postFormData( "/api/v2/media", $post_data, $boundary );
+	$result = $api->postFormData( "/api/v2/media", $post_data, $delimiter );
 	if ( $result['http_code'] == 200 ) {
-		return json_decode( $result['response'] )['id'];
+		return json_decode( $result['response'], true )['id'];
 	}
 	if ( $result['http_code'] == 202 ) {
-		sleep( 2.5 );
+		sleep( 1.5 );
 
-		return json_decode( $result['response'] )['id'];
+		return json_decode( $result['response'], true )['id'];
 	}
 
-	throw new ErrorException("Unable to upload media to mastodon:".eol.eol.$result['response']);
+	throw new ErrorException( "Unable to upload media to mastodon:" . eol . eol . $result['response'] );
 }

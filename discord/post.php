@@ -1,5 +1,6 @@
 <?php
 include plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
+require plugin_dir_path( __FILE__ ) . '../consts.php';
 
 use PhpChannels\DiscordWebhook\Discord;
 

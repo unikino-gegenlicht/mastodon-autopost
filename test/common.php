@@ -32,7 +32,7 @@ function map_get_test_movies(): array {
 		$movie->start       = DateTimeImmutable::createFromFormat( "Y-m-d H:i", "$movieDate $movieStartTime", new DateTimeZone('Europe/Berlin') );
 		$movie->name        = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
 		$movie->description = sanitize_text_field( get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true ) );
-		$movie->gerne       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
+		$movie->genre       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
 		$movie->proposedBy  = get_post_meta( $post->ID, 'weiteres_selected_by_name', single: true );
 		$movie->licensed    = get_post_meta( $post->ID, 'hauptfilm_license_ok', true );
 		$movie->wp_post_id  = $post->ID;

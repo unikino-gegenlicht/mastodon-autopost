@@ -28,15 +28,8 @@ require_once 'views/settings.php';
 require_once 'views/index.php';
 require_once 'test/test.php';
 require_once 'common/get-movies.php';
+require_once 'consts.php';
 
-const OptionGroup                     = "movie-autopost";
-const OptionsDiscordWebhookUrl        = OptionGroup . '_discord-webhook-url';
-const OptionsDiscordFallbackAvatarUrl = OptionGroup . '_discord-fallback-avatar-url';
-const OptionsMastodonInstance         = OptionGroup . '_mastodon-instance';
-const OptionsMastodonToken            = OptionGroup . '_mastodon-api-key';
-const OptionsTestPostID               = OptionGroup . '_test-post-id';
-
-const CronName = "movie-autopost_cron";
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

@@ -1,9 +1,7 @@
 <?php
 
-const OptionGroup                     = "movie-autopost";
+require plugin_dir_path( __FILE__ ) . '../consts.php';
 
-const OptionsMastodonInstance         = OptionGroup . '_mastodon-instance';
-const OptionsMastodonToken            = OptionGroup . '_mastodon-api-key';
 
 class MAP_Mastodon_API {
 	private string $apiToken;
@@ -87,9 +85,9 @@ class MAP_Mastodon_API {
 	private function post( string $path, array $headers, mixed $body ): array {
 		$ch = curl_init();
 		curl_setopt( $ch, CURLOPT_URL, "$this->instance$path" );
-		curl_setopt( $ch, CURLOPT_POST, true );
+		curl_setopt( $ch, CURLOPT_POST, 1 );
 		curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
-		curl_setopt( $ch, CURLOPT_HTTP_HEADER, $headers );
+		curl_setopt( $ch, CURLOPT_HTTPHEADER, $headers );
 		curl_setopt( $ch, CURLOPT_POSTFIELDS, $body );
 
 		$response_content = curl_exec( $ch );

@@ -58,7 +58,7 @@ function map_get_movies(): array {
 			$movie->name = get_post_meta( $post->ID, 'hauptfilm_title', single: true );
 		}
 		$movie->description = sanitize_text_field( get_post_meta( $post->ID, 'hauptfilm_filmtext', single: true ) );
-		$movie->gerne       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
+		$movie->genre       = get_post_meta( $post->ID, 'hauptfilm_shown_genre', single: true );
 		$movie->proposedBy  = get_post_meta( $post->ID, 'weiteres_selected_by_name', single: true );
 		$movie->licensed    = $movieLicensed;
 		$movie->wp_post_id  = $post->ID;
