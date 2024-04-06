@@ -109,10 +109,23 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	// now handle the movies that are shown today
 	foreach ( $moviesToday as $movie ) {
 		$status_message = get_opener_line() . eol . eol;
-		$status_message .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot.";
-		$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen unter: https://gegenlicht.net' . eol . eol;
+		$status_message .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+		$status_message .= wp_trim_words( $movie->description, more: '...' ) . eol . eol;
+		$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
 		$status_message .= '#' . preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) . ' ';
 		$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
+
+		// now trim the status message to be below the max amount of characters of 500
+		$max_excerpt_words = 55;
+		while ( strlen( $status_message > 500 ) ) {
+			$max_excerpt_words --;
+			$status_message = get_opener_line() . eol . eol;
+			$status_message .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+			$status_message .= wp_trim_words( $movie->description, $max_excerpt_words, more: '...' ) . eol . eol;
+			$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
+			$status_message .= '#' . preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) . ' ';
+			$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
+		}
 
 		$status_data = array(
 			"status"     => $status_message,
