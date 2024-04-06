@@ -3,12 +3,6 @@ include __DIR__ . '../vendor/autoload.php';
 
 use PhpChannels\DiscordWebhook\Discord;
 
-$utc     = new DateTimeZone( 'UTC' );
-$germany = new DateTimeZone( 'Europe/Berlin' );
-
-$now = DateTimeImmutable::createFromFormat( "Y-m-d", date( "Y-m-d", strtotime( 'now' ) ), $utc );
-$now = $now->setTimezone( $germany );
-
 /**
  * Posts a movie to Discord.
  *
@@ -18,29 +12,33 @@ $now = $now->setTimezone( $germany );
  * @throws Exception
  */
 function postToDiscord( array $movies ): void {
-	global $now;
 	$webhook_url = get_option( OptionsDiscordWebhookUrl );
 	if ( ! $webhook_url ) {
 		return;
 	}
 
+	$moviesToday = array();
+	$tz          = new DateTimeZone( 'Europe/Berlin' );
+	$now         = new DateTimeImmutable( null, timezone: $tz );
 	foreach ( $movies as $movie ) {
-		$day_difference = $movie->start->diff($now);
-		
-
-		$content = $movie->getPostPrefix() . eol . eol;
-		$content .= $movie->description;
-		$content .= eol;
-		$content .= eol;
-		$content .= "Mehr Infos und Reservierungen unter [gegenlicht.net](" . get_permalink( $movie->wp_post_id ) . ")";
-
-		$message = Discord::message( $webhook_url );
-		$message->setUsername( $movie->proposedBy );
-		$message->setContent( $content );
-		$message->setImage( get_the_post_thumbnail_url( $movie->wp_post_id, size: 'original' ) );
-		$message->setAvatarUrl( map_get_person_avatar_url( $movie ) );
-		$message->send();
+		if ( $movie->start->diff( $now )->days == 0 ) {
+			$moviesToday[] = $movie;
+		}
 	}
 
+	foreach ( $moviesToday as $movie ) {
+		$content = get_opener_line() . eol . eol;
+		$content .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+		$content .= $movie->description . eol . eol;
+		$content .= "Kommt gerne vorbei und reserviert euch am besten vorher eure :tickets: [hier](" . get_the_permalink( $movie->wp_post_id ) . ")";
+
+		$message = Discord::message( $webhook_url );
+		$message->setContent( $content );
+		$message->setAvatarUrl( map_get_person_avatar_url( $movie ) );
+		$message->setUsername( $movie->proposedBy );
+		$message->setImage( get_the_post_thumbnail_url( $movie->wp_post_id, 'original' ) );
+		$message->setColor( '16768256' );
+		$message->send();
+	}
 
 }
