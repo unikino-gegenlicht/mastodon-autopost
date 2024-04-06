@@ -1,18 +1,18 @@
 <?php
 
 require_once 'common.php';
+require_once plugin_dir_path( __FILE__ ) . '../discord/post.php';
+require_once plugin_dir_path( __FILE__ ) . '../mastodon/post.php';
 
 function map_run_discord_test() {
 	$movies       = map_get_test_movies();
 	$return_value = array();
-	foreach ( $movies as $movie ) {
-		try {
-			$movie->postToDiscord();
-		} catch ( Exception $e ) {
-			$return_value['message'] = $e->getMessage();
-			echo json_encode( $return_value );
-			wp_die();
-		}
+	try {
+		postToDiscord( $movies, true );
+	} catch ( Exception $e ) {
+		$return_value['message'] = $e->getMessage();
+		echo json_encode( $return_value );
+		wp_die();
 	}
 	$return_value['message'] = "success";
 	echo json_encode( $return_value );
@@ -22,14 +22,12 @@ function map_run_discord_test() {
 function map_run_mastodon_test() {
 	$movies       = map_get_test_movies();
 	$return_value = array();
-	foreach ( $movies as $movie ) {
-		try {
-			$movie->postToMastodon();
-		} catch ( ErrorException $e ) {
-			$return_value['message'] = $e->getMessage();
-			echo json_encode( $return_value );
-			wp_die();
-		}
+	try {
+		map_post_movies_to_mastodon( $movies, true );
+	} catch ( Exception $e ) {
+		$return_value['message'] = $e->getMessage();
+		echo json_encode( $return_value );
+		wp_die();
 	}
 	$return_value['message'] = "success";
 	echo json_encode( $return_value );

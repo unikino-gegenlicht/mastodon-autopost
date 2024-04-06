@@ -1,5 +1,7 @@
 <?php
 
+require_once plugin_dir_path( __FILE__ ) . '../consts.php';
+
 function map_render_discord_section() {
 	?>
     <p>Stelle hier alle Optionen für Discord ein</p>
@@ -14,26 +16,29 @@ function map_render_mastodon_section() {
 
 function map_render_url_input( $args ) {
 	?>
-    <input type="url" name="<?= $args['id'] ?>" id="<?= $args['id'] ?>" value="<?= get_option($args['id'], 'unset') ?>"/>
+    <input type="url" name="<?= $args['id'] ?>" id="<?= $args['id'] ?>"
+           value="<?= get_option( $args['id'], 'unset' ) ?>"/>
     <br/>
-    <label for="<?= $args['id'] ?>"><?= $args['description']?></label><br/>
+    <label for="<?= $args['id'] ?>"><?= $args['description'] ?></label><br/>
 	<?php
 }
 
 function map_render_text_input( $args ) {
 	?>
-    <input type="text" name="<?= $args['id'] ?>" id="<?= $args['id'] ?>" value="<?= get_option($args['id'], 'unset') ?>"/>
+    <input type="text" name="<?= $args['id'] ?>" id="<?= $args['id'] ?>"
+           value="<?= get_option( $args['id'], 'unset' ) ?>"/>
     <br/>
-    <label for="<?= $args['id'] ?>"><?= $args['description']?></label><br/>
+    <label for="<?= $args['id'] ?>"><?= $args['description'] ?></label><br/>
 	<?php
 }
 
 
 function map_render_password_input( $args ) {
 	?>
-    <input type="password" name="<?= $args['id'] ?>" id="<?= $args['id'] ?>" value="<?= get_option($args['id'], 'unset') ?>"/>
+    <input type="password" name="<?= $args['id'] ?>" id="<?= $args['id'] ?>"
+           value="<?= get_option( $args['id'], 'unset' ) ?>"/>
     <br/>
-    <label for="<?= $args['id'] ?>"><?= $args['description']?></label><br/>
+    <label for="<?= $args['id'] ?>"><?= $args['description'] ?></label><br/>
 
 	<?php
 }

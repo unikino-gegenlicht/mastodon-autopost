@@ -5,13 +5,13 @@
  * @package       Movie Autopost
  * @author        Benjamin Witte, Jan Eike Suchard
  * @license       EUPL1.2-or-later
- * @version       1.1.0
+ * @version       1.2.0-beta
  *
  * @wordpress-plugin
  * Plugin Name:   Movie Autopost
  * Plugin URI:    https://gegenlicht.net
  * Description:   Plugin um bald laufende Filme im Gegenlicht einige Zeit vorher automatisch anzukündigen
- * Version:       1.1.0
+ * Version:       1.2.0-beta
  * Author:        Benjamin Witte, Jan Eike Suchard
  * Author URI:    https://your-author-domain.com
  * Text Domain:   movie-autopost
@@ -24,21 +24,12 @@
  * along with Mastodon Auto Post Filme. If not, see <https://www.gnu.org/licenses/gpl-2.0.html/>.
  */
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once 'views/settings.php';
 require_once 'views/index.php';
 require_once 'test/test.php';
 require_once 'common/get-movies.php';
+require_once 'consts.php';
 
-const OptionGroup                     = "movie-autopost";
-const OptionsDiscordWebhookUrl        = OptionGroup . '_discord-webhook-url';
-const OptionsDiscordFallbackAvatarUrl = OptionGroup . '_discord-fallback-avatar-url';
-const OptionsMastodonInstance         = OptionGroup . '_mastodon-instance';
-const OptionsMastodonToken            = OptionGroup . '_mastodon-api-key';
-const OptionsTestPostID               = OptionGroup . '_test-post-id';
-
-const CronName = "movie-autopost_cron";
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -154,24 +145,22 @@ function map_register_cron() {
 	add_action( CronName, 'map_cron' );
 	add_option( OptionGroup . '_last-cron' );
 	if ( ! wp_next_scheduled( CronName ) ) {
-		wp_schedule_event( 1711918800, 'daily', CronName );
+		wp_schedule_event( 1712318400, 'daily', CronName );
 	}
 }
 
-function map_cron(): void {
+function map_cron( $testing = false ): void {
 	$movies = map_get_movies();
-	foreach ( $movies as $movie ) {
-		try {
-			$movie->postToDiscord();
-		} catch ( Exception $e ) {
-			wp_mail( get_option( 'admin_email' ), '[Autopost] Unable to Post to Discord', $e->getMessage() );
-		}
-		try {
-			$movie->postToMastodon();
-		} catch ( ErrorException $e ) {
-			wp_mail( get_option( 'admin_email' ), '[Autopost] Unable to Post to Mastodon', $e->getMessage() );
+	try {
+		postToDiscord( $movies );
+	} catch ( Exception $e ) {
+		wp_mail( get_option( 'admin_email' ), '[Autopost] Unable to Post to Discord', $e->getMessage() );
+	}
 
-		}
+	try {
+		map_post_movies_to_mastodon($movies, $testing);
+	} catch ( ErrorException $e ) {
+		wp_mail( get_option( 'admin_email' ), '[Autopost] Unable to Post to Mastodon', $e->getMessage() );
 	}
 	update_option( OptionGroup . '_last-cron', date( 'd.m.Y H:i:s' ) );
 }
@@ -182,8 +171,8 @@ function map_run_filter_query_test() {
 	wp_die();
 }
 
-#[NoReturn] function map_run_cron(): void {
-	map_cron();
+function map_run_cron(): void {
+	map_cron(true);
 	wp_die();
 }
 
@@ -195,7 +184,7 @@ register_deactivation_hook( __FILE__, 'map_cleanup' );
 
 add_action( 'admin_init', callback: 'map_initialize_settings' );
 add_action( 'admin_menu', callback: 'map_configure_menus' );
-add_action('init', 'map_register_cron');
+add_action( 'init', 'map_register_cron' );
 add_action( 'wp_ajax_movie_autopost_test_discord', 'map_run_discord_test' );
 add_action( 'wp_ajax_movie_autopost_test_mastodon', 'map_run_mastodon_test' );
 add_action( 'wp_ajax_movie_autopost_test_query', 'map_run_filter_query_test' );
