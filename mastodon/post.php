@@ -99,7 +99,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 			$movieDate  = $collected_movie->start->format( "d.m.Y" );
 			$movieTime  = $collected_movie->start->format( "H:i" ) . " Uhr";
 			$movieTitle = $collected_movie->name;
-			$movieGenre = '#' . strtolower(preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre ));
+			$movieGenre = '#' . preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre );
 			$table_row  = [ $movieDate, $movieTime, $movieTitle, $movieGenre ];
 			$table_data[] = $table_row;
 		}
@@ -107,8 +107,8 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 		// now build the post depending on the movies returned by the query and the day filtering
 		$status_message = get_opener_line() . eol . eol;
 		$status_message .= table( $table_data ) . eol . eol;
-		$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen unter: https://gegenlicht.net/programm' . eol . eol;
-		$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
+		$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen bekommt ihr wie gewohnt auf unserer Website: https://gegenlicht.net/' . eol . eol;
+		$status_message .= '#Uni #Kino #Oldenburg #UniOldenburg #Gegenlicht #KommunalesKino #Film';
 
 
 		$status_data = array(
@@ -128,8 +128,8 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 		$status_message .= "Um" . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 		$status_message .= wp_trim_words( $movie->description, more: '...' ) . eol . eol;
 		$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
-		$status_message .= '#' . strtolower( preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) ) . ' ';
-		$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
+		$status_message .= '#' . preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) . ' ';
+		$status_message .= '#Uni #Kino #Oldenburg #UniOldenburg #Gegenlicht #KommunalesKino #Film';
 
 		// now trim the status message to be below the max amount of characters of 500
 		$max_excerpt_words = 55;
@@ -139,8 +139,8 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 			$status_message .= "Um" . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 			$status_message .= wp_trim_words( $movie->description, $max_excerpt_words, more: '...' ) . eol . eol;
 			$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
-			$status_message .= '#' . strtolower( preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) ) . ' ';
-			$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
+			$status_message .= '#' . preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) . ' ';
+			$status_message .= '#Uni #Kino #Oldenburg #UniOldenburg #Gegenlicht #KommunalesKino #Film';
 		}
 
 		$status_data = array(
