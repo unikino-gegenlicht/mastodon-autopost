@@ -93,13 +93,13 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 
 
 	if ( sizeof( $collectedMovies ) > 0 ) {
-		$table_data = array();
+		$table_data = [];
 		foreach ( $collectedMovies as $collected_movie ) {
-			$movieDate    = $collected_movie->start->format( "d.m.Y" );
-			$movieTime    = $collected_movie->start->format( "H:i" ) . " Uhr";
-			$movieTitle   = $collected_movie->name;
-			$movieGenre   = '#' . preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre );
-			$table_row    = array( $movieDate, $movieTime, $movieTitle, $movieGenre );
+			$movieDate  = $collected_movie->start->format( "d.m.Y" );
+			$movieTime  = $collected_movie->start->format( "H:i" ) . " Uhr";
+			$movieTitle = $collected_movie->name;
+			$movieGenre = '#' . preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre );
+			$table_row  = [ $movieDate, $movieTime, $movieTitle, $movieGenre ];
 			$table_data[] = $table_row;
 		}
 
