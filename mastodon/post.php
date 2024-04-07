@@ -56,6 +56,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	foreach ( $movies as $movie ) {
 		if ( $testing ) {
 			$moviesToday[] = $movie;
+			$collectedMovies[] = $movie;
 			continue;
 		}
 		switch ( $movie->start->diff( $now, true )->days ) {
