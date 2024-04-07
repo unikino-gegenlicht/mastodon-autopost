@@ -1,5 +1,6 @@
 <?php
 
+require_once plugin_dir_path(__FILE__).'../MAP_Movie.php';
 
 const metaQueryKey = 'hauptfilm_date';
 

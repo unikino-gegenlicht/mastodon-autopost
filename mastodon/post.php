@@ -56,9 +56,10 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	foreach ( $movies as $movie ) {
 		if ( $testing ) {
 			$moviesToday[] = $movie;
+			$collectedMovies[] = $movie;
 			continue;
 		}
-		switch ( $movie->start->diff( $now )->days ) {
+		switch ( $movie->start->diff( $now, true )->days ) {
 			case 3:
 			case 2:
 			case 1:
@@ -98,7 +99,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 			$movieDate  = $collected_movie->start->format( "d.m.Y" );
 			$movieTime  = $collected_movie->start->format( "H:i" ) . " Uhr";
 			$movieTitle = $collected_movie->name;
-			$movieGenre = '#' . preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre );
+			$movieGenre = '#' . strtolower(preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre ));
 			$table_row  = [ $movieDate, $movieTime, $movieTitle, $movieGenre ];
 			$table_data[] = $table_row;
 		}
