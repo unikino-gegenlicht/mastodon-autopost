@@ -1,15 +1,14 @@
 <?php
 
-require plugin_dir_path(__FILE__). '../common/table.php';
-require plugin_dir_path(__FILE__). 'MAP_Mastodon_API.php';
-require plugin_dir_path(__FILE__). 'upload-media.php';
-require_once plugin_dir_path(__FILE__). '../consts.php';
+require plugin_dir_path( __FILE__ ) . '../common/table.php';
+require plugin_dir_path( __FILE__ ) . 'MAP_Mastodon_API.php';
+require plugin_dir_path( __FILE__ ) . 'upload-media.php';
+require_once plugin_dir_path( __FILE__ ) . '../consts.php';
+require_once plugin_dir_path( __FILE__ ) . 'announcement-openers.php';
+require_once plugin_dir_path( __FILE__ ) . 'singe-movie-openers.php';
 
 
 $tz = new DateTimeZone( 'Europe/Berlin' );
-
-$announcement_openers = [ 'Wir freuen uns euch für die kommenden Tage die folgenden Filme und Vorführungen ankündigen zu dürfen' ];
-$single_movie_openers = [ '' ];
 
 
 /**
@@ -19,7 +18,7 @@ $single_movie_openers = [ '' ];
  *
  * @return string The selected opener line.
  */
-function get_opener_line( $for_single_movie = false ): string {
+function get_opener_line( bool $for_single_movie = false ): string {
 	global $announcement_openers, $single_movie_openers;
 	if ( $for_single_movie ) {
 		$line = rand( 0, sizeof( $single_movie_openers ) - 1 );
@@ -55,7 +54,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	$now             = new DateTimeImmutable( null, timezone: $tz );
 	$unlicensedMovie = false;
 	foreach ( $movies as $movie ) {
-		if ($testing) {
+		if ( $testing ) {
 			$moviesToday[] = $movie;
 			continue;
 		}
@@ -81,7 +80,7 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 	} );
 
 	// check if the movies are the same to stop spam posting
-	if (!$testing) {
+	if ( ! $testing ) {
 		$oldCollectedMovies = get_option( 'map_movie_collected_movies_last_mastodon' );
 		if ( $oldCollectedMovies == $collectedMovies ) {
 			return;
@@ -90,53 +89,56 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 
 	}
 
+	$updates = array();
 
 
+	if ( sizeof( $collectedMovies ) > 0 ) {
+		$table_data = array();
+		foreach ( $collectedMovies as $collected_movie ) {
+			$movieDate    = $collected_movie->start->format( "d.m.Y" );
+			$movieTime    = $collected_movie->start->format( "H:i" ) . " Uhr";
+			$movieTitle   = $collected_movie->name;
+			$movieGenre   = '#' . preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre );
+			$table_row    = array( $movieDate, $movieTime, $movieTitle, $movieGenre );
+			$table_data[] = $table_row;
+		}
 
-	$table_data = array();
-	foreach ( $collectedMovies as $collected_movie ) {
-		$movieDate    = $collected_movie->start->format( "d.m.Y" );
-		$movieTime    = $collected_movie->start->format( "H:i" ) . " Uhr";
-		$movieTitle   = $collected_movie->name;
-		$movieGenre   = '#' . preg_replace( '/([\s\-\+]+)/', '_', $collected_movie->genre );
-		$table_row    = array( $movieDate, $movieTime, $movieTitle, $movieGenre );
-		$table_data[] = $table_row;
+		// now build the post depending on the movies returned by the query and the day filtering
+		$status_message = get_opener_line() . eol . eol;
+		$status_message .= table( $table_data ) . eol . eol;
+		$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen unter: https://gegenlicht.net/programm' . eol . eol;
+		$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
+
+
+		$status_data = array(
+			"status"     => $status_message,
+			"language"   => "de",
+			"visibility" => $testing ? 'direct' : 'public',
+		);
+		$updates[]   = $status_data;
+
 	}
 
-	// now build the post depending on the movies returned by the query and the day filtering
-	$status_message = get_opener_line() . eol . eol;
-	$status_message .= table( $table_data ) . eol . eol;
-	$status_message .= 'Mehr Infos zu den Vorführungen und Reservierungen unter: https://gegenlicht.net/programm' . eol . eol;
-	$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
-
-
-	$status_data = array(
-		"status"     => $status_message,
-		"language"   => "de",
-		"visibility" => $testing ? 'direct' : 'public',
-	);
-
-	$updates   = array();
-	$updates[] = $status_data;
 
 	// now handle the movies that are shown today
 	foreach ( $moviesToday as $movie ) {
-		$status_message = get_opener_line() . eol . eol;
-		$status_message .= "Heute um " . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+		$opener_line    = get_opener_line( true );
+		$status_message = $opener_line . eol . eol;
+		$status_message .= "Um" . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 		$status_message .= wp_trim_words( $movie->description, more: '...' ) . eol . eol;
 		$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
-		$status_message .= '#' . strtolower(preg_replace( '/([\s\-\+]+)/', '_', $movie->genre )) . ' ';
+		$status_message .= '#' . strtolower( preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) ) . ' ';
 		$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
 
 		// now trim the status message to be below the max amount of characters of 500
 		$max_excerpt_words = 55;
 		while ( strlen( $status_message ) > 500 ) {
 			$max_excerpt_words --;
-			$status_message = get_opener_line() . eol . eol;
-			$status_message .= "Heute um " . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+			$status_message = $opener_line . eol . eol;
+			$status_message .= "Um" . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 			$status_message .= wp_trim_words( $movie->description, $max_excerpt_words, more: '...' ) . eol . eol;
 			$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
-			$status_message .= '#' . strtolower(preg_replace( '/([\s\-\+]+)/', '_', $movie->genre )) . ' ';
+			$status_message .= '#' . strtolower( preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) ) . ' ';
 			$status_message .= '#kino #unikino #oldenburg #uni_oldenburg #gegenlicht #kommunales_kino';
 		}
 

@@ -1,11 +1,11 @@
 <?php
 
-require_once 'common.php';
+require_once plugin_dir_path(__FILE__).'../common/get-movies.php';
 require_once plugin_dir_path( __FILE__ ) . '../discord/post.php';
 require_once plugin_dir_path( __FILE__ ) . '../mastodon/post.php';
 
 function map_run_discord_test() {
-	$movies       = map_get_test_movies();
+	$movies       = map_get_movies();
 	$return_value = array();
 	try {
 		postToDiscord( $movies, true );
@@ -20,7 +20,7 @@ function map_run_discord_test() {
 }
 
 function map_run_mastodon_test() {
-	$movies       = map_get_test_movies();
+	$movies       = map_get_movies();
 	$return_value = array();
 	try {
 		map_post_movies_to_mastodon( $movies, true );
