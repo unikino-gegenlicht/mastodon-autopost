@@ -51,6 +51,6 @@ jobs:
         with:
           artifacts: 'movie-autopost-${{github.ref_name}}.zip'
           generateReleaseNotes: true
-          prerelease: ${{ contains("beta", github.ref_name) }}
+          prerelease: ${{ contains('beta', github.ref_name) }}
 
 
