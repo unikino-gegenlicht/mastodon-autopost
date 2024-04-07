@@ -122,8 +122,9 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 
 	// now handle the movies that are shown today
 	foreach ( $moviesToday as $movie ) {
-		$status_message = get_opener_line( true ) . eol . eol;
-		$status_message .= "Heute um " . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+		$opener_line    = get_opener_line( true );
+		$status_message = $opener_line . eol . eol;
+		$status_message .= "Um" . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 		$status_message .= wp_trim_words( $movie->description, more: '...' ) . eol . eol;
 		$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
 		$status_message .= '#' . strtolower( preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) ) . ' ';
@@ -133,8 +134,8 @@ function map_post_movies_to_mastodon( array $movies, bool $testing = false ): vo
 		$max_excerpt_words = 55;
 		while ( strlen( $status_message ) > 500 ) {
 			$max_excerpt_words --;
-			$status_message = get_opener_line( true ) . eol . eol;
-			$status_message .= "Heute um " . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+			$status_message = $opener_line . eol . eol;
+			$status_message .= "Um" . $movie->start->format( " H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 			$status_message .= wp_trim_words( $movie->description, $max_excerpt_words, more: '...' ) . eol . eol;
 			$status_message .= "Reservierungen und mehr Infos unter: " . get_the_permalink( $movie->wp_post_id ) . eol . eol;
 			$status_message .= '#' . strtolower( preg_replace( '/([\s\-\+]+)/', '_', $movie->genre ) ) . ' ';
