@@ -1,15 +1,14 @@
 <?php
 
-require plugin_dir_path(__FILE__). '../common/table.php';
-require plugin_dir_path(__FILE__). 'MAP_Mastodon_API.php';
-require plugin_dir_path(__FILE__). 'upload-media.php';
-require_once plugin_dir_path(__FILE__). '../consts.php';
+require plugin_dir_path( __FILE__ ) . '../common/table.php';
+require plugin_dir_path( __FILE__ ) . 'MAP_Mastodon_API.php';
+require plugin_dir_path( __FILE__ ) . 'upload-media.php';
+require_once plugin_dir_path( __FILE__ ) . '../consts.php';
+require_once plugin_dir_path( __FILE__ ) . 'announcement-openers.php';
+require_once plugin_dir_path( __FILE__ ) . 'singe-movie-openers.php';
 
 
 $tz = new DateTimeZone( 'Europe/Berlin' );
-
-$announcement_openers = [ 'Wir freuen uns euch für die kommenden Tage die folgenden Filme und Vorführungen ankündigen zu dürfen' ];
-$single_movie_openers = [ '' ];
 
 
 /**
@@ -19,7 +18,7 @@ $single_movie_openers = [ '' ];
  *
  * @return string The selected opener line.
  */
-function get_opener_line( $for_single_movie = false ): string {
+function get_opener_line( bool $for_single_movie = false ): string {
 	global $announcement_openers, $single_movie_openers;
 	if ( $for_single_movie ) {
 		$line = rand( 0, sizeof( $single_movie_openers ) - 1 );
