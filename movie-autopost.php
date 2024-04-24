@@ -5,13 +5,13 @@
  * @package       Movie Autopost
  * @author        Benjamin Witte, Jan Eike Suchard
  * @license       EUPL1.2-or-later
- * @version       1.2.5
+ * @version       1.3.1
  *
  * @wordpress-plugin
  * Plugin Name:   Movie Autopost
  * Plugin URI:    https://gegenlicht.net
  * Description:   Plugin um bald laufende Filme im Gegenlicht einige Zeit vorher automatisch anzukündigen
- * Version:       1.2.5
+ * Version:       1.3.1
  * Author:        Benjamin Witte, Jan Eike Suchard
  * Author URI:    https://gegenlicht.net
  * Text Domain:   movie-autopost
