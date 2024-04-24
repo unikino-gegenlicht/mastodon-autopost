@@ -1,7 +1,7 @@
 <?php
 include plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
 require_once plugin_dir_path(__FILE__). '../consts.php';
-
+include  plugin_dir_path(__FILE__) . 'get-person-avatar.php';
 use PhpChannels\DiscordWebhook\Discord;
 
 /**
@@ -31,9 +31,9 @@ function postToDiscord( array $movies, bool $testing = false ): void {
 
 	foreach ( $moviesToday as $movie ) {
 		$content = get_opener_line() . eol . eol;
-		$content .= "Heute um" . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
+		$content .= "Heute um " . $movie->start->format( "H:i" ) . " Uhr haben wir für euch $movie->name im Angebot." . eol . eol;
 		$content .= $movie->description . eol . eol;
-		$content .= "Kommt gerne vorbei und reserviert euch am besten vorher eure :tickets: [hier](" . get_the_permalink( $movie->wp_post_id ) . ")";
+		$content .= "Kommt gerne vorbei und reserviert euch am besten vorher eure :tickets: [auf unserer Website](" . get_the_permalink( $movie->wp_post_id ) . ")";
 
 		$message = Discord::message( $webhook_url );
 		$message->setContent( $content );
